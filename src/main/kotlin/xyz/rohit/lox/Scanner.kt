@@ -3,6 +3,25 @@ package xyz.rohit.lox
 import xyz.rohit.lox.TokenType.*
 
 class Scanner(private var source: String) {
+    private val keywords = hashMapOf<String, TokenType>()
+    init {
+        keywords["and"] = AND
+        keywords["class"] = CLASS;
+        keywords["else"] = ELSE;
+        keywords["false"] = FALSE;
+        keywords["for"] = FOR;
+        keywords["fun"] = FUN;
+        keywords["if"] = IF;
+        keywords["nil"] = NIL;
+        keywords["or"] = OR;
+        keywords["print"] = PRINT;
+        keywords["return"] = RETURN;
+        keywords["super"] = SUPER;
+        keywords["this"] = THIS;
+        keywords["true"] = TRUE;
+        keywords["var"] = VAR;
+        keywords["while"] = WHILE;
+    }
     private val tokens: MutableList<Token> = ArrayList()
     private var start = 0
     private var current = 0
@@ -59,7 +78,14 @@ class Scanner(private var source: String) {
                 string()
             }
             else -> {
-                KLox.error(line, "Unexpected Character")
+                if(isDigit(c)){
+                    number()
+                }else if(isAlphaNumeric(c)){
+                    identifier()
+                }
+                else {
+                    KLox.error(line, "Unexpected Character")
+                }
             }
         }
     }
@@ -80,6 +106,7 @@ class Scanner(private var source: String) {
         val value = source.substring(start + 1, current - 1)
         addToken(STRING, value)
     }
+
     private fun match(expected: Char): Boolean {
         if (isAtEnd()) return false
         if (source[current] != expected) return false
@@ -93,10 +120,51 @@ class Scanner(private var source: String) {
         } else source[current]
     }
 
+    private fun peekNext(): Char{
+        if(current + 1 >= source.length)return 0.toChar()
+
+        return source[current + 1]
+    }
+
     private fun advance(): Char {
         return source[current++]
     }
 
+    private fun isDigit(c: Char): Boolean {
+        return c in '0'..'9'
+    }
+
+    private fun number(){
+        while(isDigit(peek())){
+            advance()
+        }
+        // Check for fractional part
+        if(peek() == '.'){
+            // Consume the decimal digit
+            advance()
+            while(isDigit(peek())){
+                advance()
+            }
+            addToken(NUMBER, source.substring(start, current).toDouble())
+        }
+    }
+
+    private fun identifier(){
+        while(isAlphaNumeric(peek()))advance()
+
+        val text = source.substring(start, current)
+        var type = keywords[text]
+        if(type == null) type = IDENTIFIER
+        addToken(type)
+    }
+
+    private fun isAlpha(c: Char): Boolean{
+        return (c in 'a'..'z') || (c in 'A'..'Z') || c == '_'
+    }
+
+    private fun isAlphaNumeric(c: Char): Boolean{
+        return isAlpha(c) || isDigit(c)
+    }
     private fun addToken(type: TokenType) {
         addToken(type, null)
     }
@@ -106,3 +174,12 @@ class Scanner(private var source: String) {
         tokens.add(Token(tokenType, text, literal, line))
     }
 }
+
+//  1 + / 3
+/*
+    expression  -> binary
+                -> expression operator expression
+                -> 1 + expression
+                -> 1 + unary
+                -> 1 +
+*/
