@@ -6,21 +6,21 @@ class Scanner(private var source: String) {
     private val keywords = hashMapOf<String, TokenType>()
     init {
         keywords["and"] = AND
-        keywords["class"] = CLASS;
-        keywords["else"] = ELSE;
-        keywords["false"] = FALSE;
-        keywords["for"] = FOR;
-        keywords["fun"] = FUN;
-        keywords["if"] = IF;
-        keywords["nil"] = NIL;
-        keywords["or"] = OR;
-        keywords["print"] = PRINT;
-        keywords["return"] = RETURN;
-        keywords["super"] = SUPER;
-        keywords["this"] = THIS;
-        keywords["true"] = TRUE;
-        keywords["var"] = VAR;
-        keywords["while"] = WHILE;
+        keywords["class"] = CLASS
+        keywords["else"] = ELSE
+        keywords["false"] = FALSE
+        keywords["for"] = FOR
+        keywords["fun"] = FUN
+        keywords["if"] = IF
+        keywords["nil"] = NIL
+        keywords["or"] = OR
+        keywords["print"] = PRINT
+        keywords["return"] = RETURN
+        keywords["super"] = SUPER
+        keywords["this"] = THIS
+        keywords["true"] = TRUE
+        keywords["var"] = VAR
+        keywords["while"] = WHILE
     }
     private val tokens: MutableList<Token> = ArrayList()
     private var start = 0
@@ -55,7 +55,7 @@ class Scanner(private var source: String) {
                     match('?') -> BANG_QUESTION
                     match('=') -> BANG_EQUAL
                     else -> BANG
-                }
+                },
             )
             '=' -> addToken(if (match('=')) EQUAL_EQUAL else EQUAL)
             '/' -> {
@@ -66,37 +66,36 @@ class Scanner(private var source: String) {
                     addToken(SLASH)
                 }
             }
-            ' '->{}
-            '\r'->{}
-            '\t'->{
+            ' ' -> {}
+            '\r' -> {}
+            '\t' -> {
                 /* Ignore whitespace */
             }
-            '\n'->{
+            '\n' -> {
                 line++
             }
-            '"'->{
+            '"' -> {
                 string()
             }
             else -> {
-                if(isDigit(c)){
+                if (isDigit(c)) {
                     number()
-                }else if(isAlphaNumeric(c)){
+                } else if (isAlphaNumeric(c)) {
                     identifier()
-                }
-                else {
+                } else {
                     KLox.error(line, "Unexpected Character")
                 }
             }
         }
     }
 
-    private fun string(){
-        while(peek() != '"' && !isAtEnd()){
-            if(peek() == '\n')line++
+    private fun string() {
+        while (peek() != '"' && !isAtEnd()) {
+            if (peek() == '\n')line++
             advance()
         }
-        if(isAtEnd()){
-            KLox.error(line,"Undetermined ")
+        if (isAtEnd()) {
+            KLox.error(line, "Undetermined ")
         }
         // The closing ".
         advance()
@@ -117,11 +116,13 @@ class Scanner(private var source: String) {
     private fun peek(): Char {
         return if (isAtEnd()) {
             0.toChar()
-        } else source[current]
+        } else {
+            source[current]
+        }
     }
 
-    private fun peekNext(): Char{
-        if(current + 1 >= source.length)return 0.toChar()
+    private fun peekNext(): Char {
+        if (current + 1 >= source.length)return 0.toChar()
 
         return source[current + 1]
     }
@@ -134,35 +135,35 @@ class Scanner(private var source: String) {
         return c in '0'..'9'
     }
 
-    private fun number(){
-        while(isDigit(peek())){
+    private fun number() {
+        while (isDigit(peek())) {
             advance()
         }
         // Check for fractional part
-        if(peek() == '.'){
+        if (peek() == '.') {
             // Consume the decimal digit
             advance()
-            while(isDigit(peek())){
+            while (isDigit(peek())) {
                 advance()
             }
             addToken(NUMBER, source.substring(start, current).toDouble())
         }
     }
 
-    private fun identifier(){
-        while(isAlphaNumeric(peek()))advance()
+    private fun identifier() {
+        while (isAlphaNumeric(peek()))advance()
 
         val text = source.substring(start, current)
         var type = keywords[text]
-        if(type == null) type = IDENTIFIER
+        if (type == null) type = IDENTIFIER
         addToken(type)
     }
 
-    private fun isAlpha(c: Char): Boolean{
+    private fun isAlpha(c: Char): Boolean {
         return (c in 'a'..'z') || (c in 'A'..'Z') || c == '_'
     }
 
-    private fun isAlphaNumeric(c: Char): Boolean{
+    private fun isAlphaNumeric(c: Char): Boolean {
         return isAlpha(c) || isDigit(c)
     }
     private fun addToken(type: TokenType) {

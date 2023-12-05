@@ -1,7 +1,6 @@
 package xyz.rohit.lox
 
 abstract class Expr {
-
     abstract fun <R> accept(visitor: Expr.Visitor<R>): R
     interface Visitor<R> {
         fun visitBinaryExpr(expr: Binary): R
@@ -21,7 +20,7 @@ abstract class Expr {
         }
     }
 
-    class Literal(val value: Object) : Expr() {
+    class Literal(val value: Any) : Expr() {
         override fun <R> accept(visitor: Visitor<R>): R {
             return visitor.visitLiteralExpr(this)
         }
@@ -33,3 +32,15 @@ abstract class Expr {
         }
     }
 }
+
+/*
+    expression → equality ;
+    equality → comparison ( ( "!=" | "==" ) comparison )* ;
+    comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+    term → factor ( ( "-" | "+" ) factor )* ;
+    factor → unary ( ( "/" | "*" ) unary )* ;
+    unary → ( "!" | "-" ) unary
+    | primary ;
+    primary → NUMBER | STRING | "true" | "false" | "nil"
+    | "(" expression ")" ;
+*/
