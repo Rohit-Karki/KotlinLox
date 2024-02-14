@@ -20,7 +20,7 @@ abstract class Expr {
         }
     }
 
-    class Literal(val value: Any) : Expr() {
+    class Literal(val value: Any?) : Expr() {
         override fun <R> accept(visitor: Visitor<R>): R {
             return visitor.visitLiteralExpr(this)
         }
@@ -32,15 +32,3 @@ abstract class Expr {
         }
     }
 }
-
-/*
-    expression → equality ;
-    equality → comparison ( ( "!=" | "==" ) comparison )* ;
-    comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-    term → factor ( ( "-" | "+" ) factor )* ;
-    factor → unary ( ( "/" | "*" ) unary )* ;
-    unary → ( "!" | "-" ) unary
-    | primary ;
-    primary → NUMBER | STRING | "true" | "false" | "nil"
-    | "(" expression ")" ;
-*/

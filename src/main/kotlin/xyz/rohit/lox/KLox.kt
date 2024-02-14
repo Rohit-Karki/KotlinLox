@@ -25,7 +25,7 @@ fun main(args: Array<String>) {
 
 private fun runFile(path: String) {
     val bytes = Files.readAllBytes(Paths.get(path))
-    if(hadError) exitProcess(65)
+    if (hadError) exitProcess(65)
 }
 
 private fun runPrompt() {
@@ -41,14 +41,20 @@ private fun runPrompt() {
 
 private fun run(source: String) {
     val scanner = Scanner(source)
-    val tokens : MutableList<Token> = scanner.scanTokens()
+    val tokens: MutableList<Token> = scanner.scanTokens()
     for (token in tokens) {
         println(token)
     }
-
 }
 
 object KLox {
+    fun error(token: Token, message: String) {
+        if (token.type == TokenType.EOF) {
+            report(token.line, " at end", message)
+        } else {
+            report(token.line, " at '" + token.lexeme + "'", message)
+        }
+    }
     fun error(line: Int, string: String) {
         report(line, "", string)
     }
