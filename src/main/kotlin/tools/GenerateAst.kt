@@ -14,6 +14,14 @@ fun main(args: Array<String>) {
             "Unary : Token operator, Expr right",
         ),
     )
+    defineAst(
+        outputDir,
+        "Stmt",
+        mutableListOf(
+            "Expression: Expr expression",
+            "Print: Expr expression",
+        ),
+    )
 }
 
 fun defineAst(outputDir: String, baseName: String, types: List<String>) {
