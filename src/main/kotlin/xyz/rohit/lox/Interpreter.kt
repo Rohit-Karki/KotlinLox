@@ -2,6 +2,7 @@ package xyz.rohit.lox
 
 class Interpreter : Expr.Visitor<Any>, Stmt.Visitor<Unit> {
 
+    private val globals = Environment()
     fun interpret(statements: List<Stmt>) {
         for (statement in statements) {
             execute(statement)
@@ -101,6 +102,25 @@ class Interpreter : Expr.Visitor<Any>, Stmt.Visitor<Unit> {
         val value = evaluate(stmt.expression)
         println(value.toString())
     }
+
+    /*
+    * Statement Variable to declare a variable.
+    */
+    override fun visit(stmt: Stmt.Var) {
+        var value: Any? = null
+        if (stmt.initializer != null)
+            value = evaluate(stmt.initializer)
+
+        globals.env[stmt.token.lexeme] = value
+    }
+
+    /*
+    * Expression Variable to access a variable.
+    */
+    override fun visit(expr: Expr.Variable): Any {
+        return globals.env[expr.name] ?: Any()
+    }
+
     private fun checkForNumberOperands(operator: Token, left: Any, right: Any) {
         if (left !is Number && right !is Number) {
             throw RuntimeError(operator, "Operands must be numbers")

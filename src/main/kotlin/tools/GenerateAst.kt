@@ -12,6 +12,7 @@ fun main(args: Array<String>) {
             "Grouping   : Expr expression",
             "Literal    : Object value",
             "Unary      : Token operator, Expr right",
+            "Variable   : Token name",
         ),
     )
     defineAst(
@@ -20,6 +21,7 @@ fun main(args: Array<String>) {
         mutableListOf(
             "Expression : Expr expression",
             "Print      : Expr expression",
+            "Var        : Token name, Expr initializer",
         ),
     )
     defineAst(
