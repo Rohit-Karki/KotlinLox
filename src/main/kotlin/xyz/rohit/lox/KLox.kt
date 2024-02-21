@@ -8,16 +8,16 @@ import kotlin.system.exitProcess
 
 /**
  * @author Rohit-Karki on 09/09/23
- */
+ * **/
 
 var hadError = false
+var hadRuntimeError = false
 fun main(args: Array<String>) {
     when {
         args.size > 1 -> {
             println("Usage: klox [script]")
-            System.exit(64)
+            exitProcess(64)
         }
-
         args.size == 1 -> runFile(args[0])
         else -> runPrompt()
     }
@@ -26,6 +26,7 @@ fun main(args: Array<String>) {
 private fun runFile(path: String) {
     val bytes = Files.readAllBytes(Paths.get(path))
     if (hadError) exitProcess(65)
+    if (hadRuntimeError) exitProcess(70)
 }
 
 private fun runPrompt() {
@@ -42,12 +43,15 @@ private fun runPrompt() {
 private fun run(source: String) {
     val scanner = Scanner(source)
     val tokens: MutableList<Token> = scanner.scanTokens()
-    for (token in tokens) {
-        println(token)
-    }
+    println(tokens.toString())
+    val parser = Parser(tokens)
+    val interpreter = Interpreter()
+    val statements = parser.parse()
+    interpreter.interpret(statements)
 }
 
 object KLox {
+    val interpreter = Interpreter()
     fun error(token: Token, message: String) {
         if (token.type == TokenType.EOF) {
             report(token.line, " at end", message)

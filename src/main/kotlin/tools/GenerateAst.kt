@@ -8,18 +8,28 @@ fun main(args: Array<String>) {
         outputDir,
         "Expr",
         mutableListOf(
-            "Binary : Expr left, Token operator, Expr right",
-            "Grouping : Expr expression",
-            "Literal : Object value",
-            "Unary : Token operator, Expr right",
+            "Binary     : Expr left, Token operator, Expr right",
+            "Grouping   : Expr expression",
+            "Literal    : Object value",
+            "Unary      : Token operator, Expr right",
+            "Variable   : Token name",
         ),
     )
     defineAst(
         outputDir,
         "Stmt",
         mutableListOf(
-            "Expression: Expr expression",
-            "Print: Expr expression",
+            "Expression : Expr expression",
+            "Print      : Expr expression",
+            "Var        : Token name, Expr initializer",
+        ),
+    )
+    defineAst(
+        outputDir,
+        "Stmt",
+        mutableListOf(
+            "exprStmt       : expression ;",
+            "printStmt      : print expression ;",
         ),
     )
 }
@@ -32,7 +42,7 @@ fun defineAst(outputDir: String, baseName: String, types: List<String>) {
     writer.println()
     writer.println("abstract class $baseName{")
     writer.println()
-    writer.println("abstract fun <R> accept(visitor: Expr.Visitor<R>): R")
+    writer.println("abstract fun <R> accept(visitor: Visitor<R>): R")
     defineVisitor(writer, baseName, types)
 
     for (type in types) {
@@ -73,7 +83,7 @@ fun defineType(writer: PrintWriter, baseName: String, className: String, fields:
 }
 
 fun defineVisitor(writer: PrintWriter, baseName: String, types: List<String>) {
-    writer.println("    interface Visitor<R> {")
+    writer.println("interface Visitor<out R> {")
 
     for (type in types) {
         val typeName = type.split(":")[0].trim()

@@ -1,34 +1,30 @@
 package xyz.rohit.lox
 
 abstract class Expr {
-    abstract fun <R> accept(visitor: Expr.Visitor<R>): R
-    interface Visitor<R> {
-        fun visitBinaryExpr(expr: Binary): R
-        fun visitGroupingExpr(expr: Grouping): R
-        fun visitLiteralExpr(expr: Literal): R
-        fun visitUnaryExpr(expr: Unary): R
+    abstract fun <R> accept(visitor: Visitor<R>): R
+    interface Visitor<out R> {
+        fun visit(expr: Binary): R
+        fun visit(expr: Grouping): R
+        fun visit(expr: Literal): R
+        fun visit(expr: Unary): R
+        fun visit(expr: Variable): R
     }
     class Binary(val left: Expr, val operator: Token, val right: Expr) : Expr() {
-        override fun <R> accept(visitor: Visitor<R>): R {
-            return visitor.visitBinaryExpr(this)
-        }
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visit(this)
     }
 
     class Grouping(val expression: Expr) : Expr() {
-        override fun <R> accept(visitor: Visitor<R>): R {
-            return visitor.visitGroupingExpr(this)
-        }
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visit(this)
     }
 
     class Literal(val value: Any?) : Expr() {
-        override fun <R> accept(visitor: Visitor<R>): R {
-            return visitor.visitLiteralExpr(this)
-        }
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visit(this)
     }
 
     class Unary(val operator: Token, val right: Expr) : Expr() {
-        override fun <R> accept(visitor: Visitor<R>): R {
-            return visitor.visitUnaryExpr(this)
-        }
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visit(this)
+    }
+    class Variable(val name: Token) : Expr() {
+        override fun <R> accept(visitor: Visitor<R>) = visitor.visit(this)
     }
 }
