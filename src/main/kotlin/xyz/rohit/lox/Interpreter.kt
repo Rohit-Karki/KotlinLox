@@ -1,10 +1,17 @@
 package xyz.rohit.lox
 
-import xyz.rohit.lox.Expr.Visitor
+class Interpreter : Expr.Visitor<Any>, Stmt.Visitor<Unit> {
 
-class Interpreter : Visitor<Any> {
+    fun interpret(statements: List<Stmt>) {
+        for (statement in statements) {
+            execute(statement)
+        }
+    }
     private fun evaluate(expr: Expr): Any {
         return expr.accept(this)
+    }
+    private fun execute(stmt: Stmt) {
+        stmt.accept(this)
     }
     private fun isTruthy(obj: Any?): Boolean {
         if (obj == null)return false
@@ -13,7 +20,7 @@ class Interpreter : Visitor<Any> {
         }
         return true
     }
-    override fun visitBinaryExpr(expr: Expr.Binary): Any {
+    override fun visit(expr: Expr.Binary): Any {
         val left = evaluate(expr.left)
         val right = evaluate(expr.right)
         when (expr.operator.type) {
@@ -26,11 +33,34 @@ class Interpreter : Visitor<Any> {
                 if (left is String && right is String) {
                     return left + right
                 }
+                if (left is String && right is Number) {
+                    return left + right.toString()
+                }
+                if (left is Number && right is String) {
+                    return left.toString() + right
+                }
             }
-            TokenType.GREATER -> left as Double > right as Double
-            TokenType.GREATER_EQUAL -> left as Double >= right as Double
-            TokenType.LESS -> right as Double > left as Double
-            TokenType.LESS_EQUAL -> left as Double <= right as Double
+            TokenType.SLASH -> {
+                checkForNumberOperands(expr.operator, left, right)
+                checkForDivisionByZero(expr.operator, right as Double)
+                return left as Double / right as Double
+            }
+            TokenType.GREATER -> {
+                checkForNumberOperands(expr.operator, left, right)
+                return left as Double > right as Double
+            }
+            TokenType.GREATER_EQUAL -> {
+                checkForNumberOperands(expr.operator, left, right)
+                return left as Double >= right as Double
+            }
+            TokenType.LESS -> {
+                checkForNumberOperands(expr.operator, left, right)
+                return right as Double > left as Double
+            }
+            TokenType.LESS_EQUAL -> {
+                checkForNumberOperands(expr.operator, left, right)
+                return left as Double <= right as Double
+            }
             TokenType.BANG_EQUAL -> !isEqual(left, right)
             TokenType.EQUAL_EQUAL -> isEqual(left, right)
             else -> {
@@ -47,15 +77,11 @@ class Interpreter : Visitor<Any> {
         return false
     }
 
-    override fun visitGroupingExpr(expr: Expr.Grouping): Any {
-        return evaluate(expr.expression)
-    }
+    override fun visit(expr: Expr.Grouping) = evaluate(expr.expression)
 
-    override fun visitLiteralExpr(expr: Expr.Literal): Any {
-        return expr.value
-    }
+    override fun visit(expr: Expr.Literal) = expr.value!!
 
-    override fun visitUnaryExpr(expr: Expr.Unary): Any {
+    override fun visit(expr: Expr.Unary): Any {
         val right = evaluate(expr.right)
         when (expr.operator.type) {
             TokenType.MINUS -> -(right as Double)
@@ -65,5 +91,24 @@ class Interpreter : Visitor<Any> {
         }
         // Unreachable
         return Any()
+    }
+
+    override fun visit(stmt: Stmt.Expression) {
+        evaluate(stmt.expression)
+    }
+
+    override fun visit(stmt: Stmt.Print) {
+        val value = evaluate(stmt.expression)
+        println(value.toString())
+    }
+    private fun checkForNumberOperands(operator: Token, left: Any, right: Any) {
+        if (left !is Number && right !is Number) {
+            throw RuntimeError(operator, "Operands must be numbers")
+        }
+    }
+    private fun checkForDivisionByZero(token: Token, denominator: Number) {
+        if (denominator == 0) {
+            throw RuntimeError(token, "Division by 0 is not possible")
+        }
     }
 }

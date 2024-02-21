@@ -1,7 +1,6 @@
 package xyz.rohit.lox
 
 class Parser(tokens: List<Token>) {
-
     private class ParseError() : RuntimeException()
     private var tokens: MutableList<Token>
     var current: Int = 0
@@ -25,28 +24,33 @@ class Parser(tokens: List<Token>) {
         }
     }
 
-    private fun parse(): Expr? {
-        return try {
-            expression()
-        } catch (error: ParseError) {
-            null
+    fun parse(): MutableList<Stmt> {
+        var statements = mutableListOf<Stmt>()
+        while (!isAtEnd()) {
+            statements.add(statement())
         }
+        return statements
+    }
+    private fun statement(): Stmt {
+        if (match(TokenType.PRINT)) {
+            return printStatement()
+        }
+        return expressionStatement()
+    }
+    private fun equality(): Expr {
+        var expr: Expr = comparision()
+        while (match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
+            val operator = previous()
+            val right = comparision()
+            expr = Expr.Binary(expr, operator, right)
+        }
+        return expr
     }
     private fun comparision(): Expr {
         var expr: Expr = term()
         while (match(TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL)) {
             val operator = previous()
             val right = term()
-            expr = Expr.Binary(expr, operator, right)
-        }
-        return expr
-    }
-
-    private fun equality(): Expr {
-        var expr: Expr = comparision()
-        while (match(TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL)) {
-            val operator = previous()
-            val right = comparision()
             expr = Expr.Binary(expr, operator, right)
         }
         return expr
@@ -91,15 +95,20 @@ class Parser(tokens: List<Token>) {
         }
         throw error(peek(), "Expect expression")
     }
-
+    private fun printStatement(): Stmt {
+        val value: Expr = expression()
+        consume(TokenType.SEMICOLON, "Except ; after value")
+        return Stmt.Print(value)
+    }
+    private fun expressionStatement(): Stmt {
+        val value: Expr = expression()
+        consume(TokenType.SEMICOLON, "Except ; after value")
+        return Stmt.Expression(value)
+    }
     private fun expression(): Expr {
         return equality()
     }
 
-    /*private fun statement(): Stmt {
-        if (match(TokenType.PRINT))return printStatement()
-        return expressionStatement()
-    }*/
     private fun match(vararg tokenTypes: TokenType): Boolean {
         for (type in tokenTypes) {
             if (check(type)) {

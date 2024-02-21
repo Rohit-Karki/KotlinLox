@@ -1,21 +1,20 @@
 package xyz.rohit.lox
 
 abstract class Stmt {
-
-    abstract fun <R> accept(visitor: Expr.Visitor<R>): R
-    interface Visitor<R> {
-        fun visitExpressionStmt(stmt: Expression): R
-        fun visitPrintStmt(stmt: Print): R
+    abstract fun <R> accept(visitor: Visitor<R>): R
+    interface Visitor<out R> {
+        fun visit(stmt: Expression): R
+        fun visit(stmt: Print): R
     }
     class Expression(val expression: Expr) : Stmt() {
         override fun <R> accept(visitor: Visitor<R>): R {
-            return visitor.visitExpressionStmt(this)
+            return visitor.visit(this)
         }
     }
 
     class Print(val expression: Expr) : Stmt() {
         override fun <R> accept(visitor: Visitor<R>): R {
-            return visitor.visitPrintStmt(this)
+            return visitor.visit(this)
         }
     }
 }
